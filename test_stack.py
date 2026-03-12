@@ -42,14 +42,21 @@ def http_json(method: str, url: str, payload: dict | None = None, token: str | N
         return json.loads(response.read().decode("utf-8"))
 
 
+def require_env(name: str) -> str:
+    value = os.getenv(name, "").strip()
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
+
+
 def main() -> int:
     load_env(Path(".env"))
 
     postgres_host = os.getenv("POSTGRES_HOST", "localhost")
     postgres_port = int(os.getenv("POSTGRES_PORT", "5432"))
-    postgres_db = os.getenv("POSTGRES_DB", "appdb")
-    postgres_user = os.getenv("POSTGRES_USER", "appuser")
-    postgres_password = os.getenv("POSTGRES_PASSWORD", "REMOVED_SECRET")
+    postgres_db = require_env("POSTGRES_DB")
+    postgres_user = require_env("POSTGRES_USER")
+    postgres_password = require_env("POSTGRES_PASSWORD")
     redis_host = os.getenv("REDIS_HOST", "localhost")
     redis_port = int(os.getenv("REDIS_PORT", "6379"))
     app_url = os.getenv("APP_BASE_URL", "http://localhost")
@@ -58,7 +65,7 @@ def main() -> int:
     test_id = uuid4().hex[:8]
     username = f"user_{test_id}"
     email = f"{username}@example.com"
-    password = "password123"
+    password = os.getenv("TEST_USER_PASSWORD", f"Pass-{test_id}-123!")
 
     try:
         tcp_check("nginx", "localhost", 80)
