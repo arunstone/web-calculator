@@ -15,6 +15,7 @@ class Settings:
     access_token_expire_minutes: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
     max_queue_size: int = int(os.getenv("MAX_QUEUE_SIZE", "100"))
     celery_worker_concurrency: int = int(os.getenv("CELERY_WORKER_CONCURRENCY", "4"))
+    app_timezone: str = os.getenv("APP_TIMEZONE", "Asia/Kolkata")
 
     @property
     def database_url(self) -> str:
