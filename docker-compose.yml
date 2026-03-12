@@ -22,18 +22,11 @@ services:
     depends_on:
       - postgres
       - redis
+    env_file:
+      - .env
     environment:
       POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: appdb
-      POSTGRES_USER: appuser
-      POSTGRES_PASSWORD: REMOVED_SECRET
       REDIS_HOST: redis
-      REDIS_PORT: 6379
-      SECRET_KEY: super-secret-key-change-me
-      ACCESS_TOKEN_EXPIRE_MINUTES: 60
-      MAX_QUEUE_SIZE: 100
-      CELERY_WORKER_CONCURRENCY: 4
     networks:
       - spr
 
@@ -46,18 +39,11 @@ services:
     depends_on:
       - postgres
       - redis
+    env_file:
+      - .env
     environment:
       POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: appdb
-      POSTGRES_USER: appuser
-      POSTGRES_PASSWORD: REMOVED_SECRET
       REDIS_HOST: redis
-      REDIS_PORT: 6379
-      SECRET_KEY: super-secret-key-change-me
-      ACCESS_TOKEN_EXPIRE_MINUTES: 60
-      MAX_QUEUE_SIZE: 100
-      CELERY_WORKER_CONCURRENCY: 4
     command: ["sh", "-c", "uv run celery -A backend.tasks worker --loglevel=info -Q calculator --concurrency=${CELERY_WORKER_CONCURRENCY:-4}"]
     networks:
       - spr
@@ -67,15 +53,15 @@ services:
     container_name: local-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: appdb
-      POSTGRES_USER: appuser
-      POSTGRES_PASSWORD: REMOVED_SECRET
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -87,7 +73,7 @@ services:
     container_name: local-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     networks:
       - spr
 
